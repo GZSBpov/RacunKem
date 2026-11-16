@@ -45,6 +45,28 @@
     .spodaj { display: flex; gap: 8px; margin: 10px 0 6px; }
     .spodaj button { flex: 1; padding: 15px 8px; background: #cbd5e0; border: none; border-radius: 8px; color: #3182ce; font-weight: bold; font-size: 14px; }
     .noga { text-align: center; font-size: 11px; color: #718096; }
+    .foto-row { display: flex; gap: 10px; margin: 0 0 10px; }
+    .foto-row button { flex: 1; padding: 14px 8px; border: none; border-radius: 8px; color: #fff; font-weight: bold; font-size: 15px; }
+    .foto-row button:disabled { opacity: .6; }
+    #btn-kamera { background: #2b6cb0; }
+    #btn-galerija { background: #4a5568; }
+    .nalaganje { text-align: center; color: #4a5568; font-size: 14px; margin: 0 0 10px; }
+    .nalaganje::before { content: ""; display: block; width: 28px; height: 28px; margin: 0 auto 6px; border: 3px solid #bee3f8; border-top-color: #3182ce; border-radius: 50%; animation: vrti 0.9s linear infinite; }
+    @keyframes vrti { to { transform: rotate(360deg); } }
+    @media (prefers-reduced-motion: reduce) { .nalaganje::before { animation: none; } }
+    #predogled { display: block; width: 100%; max-height: 160px; object-fit: contain; border-radius: 8px; margin: 0 0 10px; background: #edf2f7; }
+    .sporocilo { padding: 10px; border-radius: 8px; font-size: 13px; margin: 0 0 10px; background: #ebf8ff; color: #2b6cb0; border: 1px solid #bee3f8; }
+    .sporocilo.napaka { background: #fff5f5; color: #c53030; border-color: #feb2b2; }
+    .znacka { font-size: 11px; font-weight: bold; padding: 3px 7px; border-radius: 10px; background: #edf2f7; color: #4a5568; white-space: nowrap; }
+    .card.premalo .znacka { background: #fff5f5; color: #c53030; }
+    .card.prevec .znacka { background: #feebc8; color: #c05621; }
+    .card.ok .znacka { background: #f0fff4; color: #276749; }
+    .nastavitve summary { cursor: pointer; font-weight: bold; font-size: 14px; color: #4a5568; padding: 4px 0; }
+    .nastavitve .gumb { padding: 9px 12px; border: 1px solid #3182ce; border-radius: 6px; background: #fff; color: #3182ce; font-weight: bold; font-size: 13px; white-space: nowrap; }
+    .nastavitve .gumb.rdec { border-color: #c53030; color: #c53030; }
+    .koda-vrstica { display: flex; align-items: center; gap: 6px; padding: 8px 0; border-top: 1px solid #edf2f7; font-size: 13px; }
+    .koda-vrstica .ime { flex: 1; min-width: 0; font-weight: bold; }
+    .koda-vrstica small { display: block; font-weight: normal; color: #718096; }
     [hidden] { display: none !important; }
 </style>
 </head>
@@ -62,6 +84,16 @@
         </div>
     </div>
 
+    <div class="foto-row">
+        <button type="button" id="btn-kamera">📷 Slikaj list</button>
+        <button type="button" id="btn-galerija">🖼️ Iz galerije</button>
+    </div>
+    <input type="file" id="vnos-kamera" accept="image/*" capture="environment" hidden>
+    <input type="file" id="vnos-galerija" accept="image/*" hidden>
+    <div class="nalaganje" id="nalaganje" hidden>Analiziram sliko in preračunavam …</div>
+    <img id="predogled" alt="Poslana slika analize" hidden>
+    <div class="sporocilo" id="sporocilo" role="status" hidden></div>
+
     <div class="card dodaj">
         <div style="font-weight:bold; margin-bottom:5px;">+ DODAJ NOV ELEMENT</div>
         <input id="nov-simbol" placeholder="Simbol (npr. Cr, Ti, Mg)" autocomplete="off" autocapitalize="characters" style="margin-bottom:8px; font-weight:bold;" aria-label="Simbol elementa">
@@ -75,6 +107,24 @@
 
     <div id="elementi"></div>
 
+    <details class="card nastavitve" id="nastavitve">
+        <summary>Prepoznavanje iz slike</summary>
+        <div class="small" id="foto-stanje" style="margin:6px 0 8px; font-size:13px;"></div>
+        <label class="small" for="koda">Koda za prepoznavanje (dobiš jo od skrbnika):</label>
+        <div class="row"><input id="koda" class="f1" autocomplete="off" autocapitalize="none" spellcheck="false"><button type="button" class="gumb" id="btn-koda">Shrani</button></div>
+        <details style="margin-top:12px;" id="skrbnik">
+            <summary style="font-size:13px;">Upravljanje kod (skrbnik)</summary>
+            <label class="small" for="admin-geslo">Geslo za upravljanje:</label>
+            <div class="row"><input id="admin-geslo" class="f1" type="password" autocomplete="off"><button type="button" class="gumb" id="btn-admin">Pokaži kode</button></div>
+            <div id="admin-vsebina" hidden>
+                <label class="small" for="admin-ime">Nova koda za (ime):</label>
+                <div class="row"><input id="admin-ime" class="f1" autocomplete="off" placeholder="npr. Janez"><button type="button" class="gumb" id="btn-admin-nov">Ustvari</button></div>
+                <div id="admin-seznam" style="margin-top:8px;"></div>
+            </div>
+            <div class="small" id="admin-stanje" style="font-size:13px;"></div>
+        </details>
+    </details>
+
     <div class="spodaj">
         <button type="button" id="btn-deli">🔗 Deli povezavo</button>
         <button type="button" id="btn-ponastavi">↺ Ponastavi</button>
@@ -82,6 +132,7 @@
     <div class="noga" id="noga">RacunKem · spletna različica</div>
 </main>
 
+<script src="config.js"></script>
 <script src="alloyMath.js"></script>
 <script>
 (function () {
@@ -131,7 +182,7 @@
         $('elementi').innerHTML = stanje.elementi.map(function (e) {
             const id = esc(e.id);
             return '<div class="card" data-id="' + id + '">' +
-                '<div class="row" style="margin-bottom:10px;"><div class="symbol">' + esc(e.symbol) + '</div><label class="label" for="c-' + id + '">Čistost %:</label>' +
+                '<div class="row" style="margin-bottom:10px;"><div class="symbol">' + esc(e.symbol) + '</div><span class="znacka" data-znacka="1"></span><label class="label" for="c-' + id + '">Čistost %:</label>' +
                 '<input class="cistost" id="c-' + id + '" data-polje="purityInput" inputmode="decimal" autocomplete="off" value="' + esc(e.purityInput) + '">' +
                 '<button type="button" class="odstrani" data-odstrani="1" aria-label="Odstrani ' + esc(e.symbol) + '">✕</button></div>' +
                 '<div class="row"><div class="f1"><label class="small" for="n-' + id + '">Min (%):</label><input id="n-' + id + '" data-polje="minInput" inputmode="decimal" autocomplete="off" value="' + esc(e.minInput) + '"></div>' +
@@ -152,6 +203,7 @@
             kartica.querySelector('[data-rocni]').innerHTML = htmlRocnega(e);
             kartica.classList.remove('ok', 'premalo', 'prevec');
             kartica.classList.add(r.razred);
+            kartica.querySelector('[data-znacka]').textContent = r.razred === 'ok' ? 'OK' : r.razred === 'premalo' ? 'POD MEJO' : 'NAD MEJO';
         });
     }
     function osveziCilj() {
@@ -204,6 +256,171 @@
         $('masa').value = stanje.masa; $('btn-ponastavi').textContent = '↺ Ponastavi';
         osveziCilj(); narisiElemente();
     });
+
+    // ---------- prepoznavanje iz slike (ključ OpenAI je na strežniku; stran pošlje sliko in kodo uporabnika) ----------
+    const STREZNIK = String(window.RACUNKEM_STREZNIK || '').trim();
+    const KLJUC_KODE = 'racunkem_koda_v1';
+    let koda = '';
+    try { koda = localStorage.getItem(KLJUC_KODE) || ''; } catch (e) { koda = ''; }
+
+    function sporoci(besedilo, napaka) {
+        const el = $('sporocilo');
+        el.hidden = !besedilo;
+        el.textContent = besedilo || '';
+        el.classList.toggle('napaka', !!napaka);
+    }
+    function klicStreznika(telo) {
+        // text/plain: zahteva brez predhodnega preverjanja (preflight), ki ga Apps Script ne podpira
+        return fetch(STREZNIK, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(telo) })
+            .then(function (r) { return r.ok ? r.json() : { status: 'error', message: 'Strežnik je vrnil napako (HTTP ' + r.status + ').' }; })
+            .catch(function () { return { status: 'error', message: 'Ni povezave s strežnikom. Preveri internet.', omrezje: true }; });
+    }
+    function osveziFotoStanje(dodatno) {
+        $('koda').value = koda;
+        $('foto-stanje').textContent = !STREZNIK ? 'Prepoznavanje iz slike na tej strani še ni vklopljeno (strežnik ni nastavljen).'
+            : !koda ? 'Za prepoznavanje iz slike vpiši kodo. Kalkulator deluje tudi brez nje.'
+            : (dodatno || 'Koda je shranjena v tem telefonu.');
+    }
+    function shraniKodo(nova, tiho) {
+        koda = String(nova || '').trim();
+        try { if (koda) localStorage.setItem(KLJUC_KODE, koda); else localStorage.removeItem(KLJUC_KODE); } catch (e) { /* brez shrambe */ }
+        osveziFotoStanje();
+        if (!koda || !STREZNIK) return Promise.resolve();
+        osveziFotoStanje('Preverjam kodo …');
+        return klicStreznika({ akcija: 'preveri', zeton: koda }).then(function (o) {
+            if (o.status === 'success') osveziFotoStanje('Koda velja (' + o.ime + '). Shranjena je v tem telefonu.');
+            else osveziFotoStanje(o.omrezje ? 'Kode ni bilo mogoče preveriti (ni povezave).' : 'Koda ni veljavna. Preveri jo pri skrbniku.');
+            if (!tiho && o.status !== 'success') $('nastavitve').open = true;
+        });
+    }
+    $('btn-koda').addEventListener('click', function () { shraniKodo($('koda').value); });
+
+    /** Sliko pomanjša (daljša stranica največ 1600 točk) in vrne { base64, predogled }. */
+    function pripraviSliko(datoteka) {
+        return new Promise(function (resolve, reject) {
+            const naslov = URL.createObjectURL(datoteka);
+            const slika = new Image();
+            slika.onload = function () {
+                const najvec = 1600, m = Math.min(1, najvec / Math.max(slika.naturalWidth, slika.naturalHeight));
+                const platno = document.createElement('canvas');
+                platno.width = Math.max(1, Math.round(slika.naturalWidth * m)); platno.height = Math.max(1, Math.round(slika.naturalHeight * m));
+                const c = platno.getContext('2d');
+                c.fillStyle = '#fff'; c.fillRect(0, 0, platno.width, platno.height);
+                c.drawImage(slika, 0, 0, platno.width, platno.height);
+                URL.revokeObjectURL(naslov);
+                const podatki = platno.toDataURL('image/jpeg', 0.8);
+                resolve({ base64: podatki.split(',')[1], predogled: podatki });
+            };
+            slika.onerror = function () { URL.revokeObjectURL(naslov); reject(new Error('Datoteke ni mogoče odpreti kot sliko.')); };
+            slika.src = naslov;
+        });
+    }
+    function zasedeno(da) {
+        $('nalaganje').hidden = !da;
+        $('btn-kamera').disabled = da; $('btn-galerija').disabled = da;
+    }
+    function obdelajSliko(datoteka) {
+        if (!datoteka) return;
+        sporoci('');
+        zasedeno(true);
+        pripraviSliko(datoteka).then(function (s) {
+            $('predogled').src = s.predogled; $('predogled').hidden = false;
+            return klicStreznika({ akcija: 'preberi', zeton: koda, slika: s.base64 });
+        }).then(function (o) {
+            zasedeno(false);
+            if (o.status !== 'success') {
+                sporoci(o.message || 'Slike ni bilo mogoče prebrati.', true);
+                if (o.koda === 'zeton') { $('nastavitve').open = true; osveziFotoStanje('Koda ni veljavna. Preveri jo pri skrbniku.'); }
+                return;
+            }
+            // prebrani elementi zamenjajo seznam (kot v prvotni aplikaciji); čistost po simbolu
+            stanje.elementi = o.elementi.map(function (e) { return novElement(String(e.symbol), String(e.min), String(e.max), String(e.current)); });
+            shrani(); narisiElemente();
+            sporoci('Prebranih ' + o.elementi.length + ' elementov s slike. Preveri vrednosti, preden dodajaš.');
+        }).catch(function (e) { zasedeno(false); sporoci(e && e.message ? e.message : 'Slike ni bilo mogoče obdelati.', true); });
+    }
+    function izberiSliko(vnos) {
+        if (!STREZNIK || !koda) {
+            $('nastavitve').open = true;
+            osveziFotoStanje();
+            $('nastavitve').scrollIntoView({ block: 'center' });
+            if (STREZNIK) $('koda').focus();
+            return;
+        }
+        vnos.value = '';
+        vnos.click();
+    }
+    $('btn-kamera').addEventListener('click', function () { izberiSliko($('vnos-kamera')); });
+    $('btn-galerija').addEventListener('click', function () { izberiSliko($('vnos-galerija')); });
+    ['vnos-kamera', 'vnos-galerija'].forEach(function (id) {
+        $(id).addEventListener('change', function () {
+            const datoteka = $(id).files[0];
+            $(id).value = ''; // ista slika se lahko izbere znova
+            obdelajSliko(datoteka);
+        });
+    });
+
+    // ---------- upravljanje kod (skrbnik) ----------
+    let kodeSkrbnika = [];
+    function adminStanje(besedilo) { $('admin-stanje').textContent = besedilo || ''; }
+    function povezavaSKodo(z) { return window.location.href.split('#')[0] + '#koda=' + encodeURIComponent(z); }
+    function narisiKode() {
+        $('admin-seznam').innerHTML = kodeSkrbnika.length ? kodeSkrbnika.map(function (k, i) {
+            return '<div class="koda-vrstica"><div class="ime">' + esc(k.ime) + '<small>od ' + esc(k.ustvarjen) + ' · danes slik: ' + (k.danes || 0) + '</small></div>' +
+                '<button type="button" class="gumb" data-deli="' + i + '">Deli</button><button type="button" class="gumb rdec" data-preklici="' + i + '">Prekliči</button></div>';
+        }).join('') : '<div class="small">Ni izdanih kod.</div>';
+    }
+    function adminKlic(telo) {
+        if (!STREZNIK) { adminStanje('Strežnik ni nastavljen.'); return Promise.resolve({ status: 'error' }); }
+        adminStanje('…');
+        return klicStreznika(Object.assign({ geslo: $('admin-geslo').value }, telo)).then(function (o) {
+            adminStanje(o.status === 'success' ? '' : (o.message || 'Napaka.'));
+            if (o.status !== 'success' && o.koda === 'geslo') $('admin-vsebina').hidden = true;
+            return o;
+        });
+    }
+    function adminSeznam() {
+        return adminKlic({ akcija: 'admin.seznam' }).then(function (o) {
+            if (o.status !== 'success') return;
+            kodeSkrbnika = o.kode || [];
+            $('admin-vsebina').hidden = false;
+            narisiKode();
+        });
+    }
+    $('btn-admin').addEventListener('click', adminSeznam);
+    $('btn-admin-nov').addEventListener('click', function () {
+        adminKlic({ akcija: 'admin.nov', ime: $('admin-ime').value }).then(function (o) {
+            if (o.status !== 'success') return;
+            $('admin-ime').value = '';
+            adminSeznam().then(function () { adminStanje('Koda za »' + o.ime + '« je ustvarjena. Pošlji jo z gumbom Deli.'); });
+        });
+    });
+    let potrdiPreklic = { i: -1, cas: 0 };
+    $('admin-seznam').addEventListener('click', function (ev) {
+        const g = ev.target.closest('button');
+        if (!g) return;
+        if (g.dataset.deli !== undefined) {
+            const k = kodeSkrbnika[parseInt(g.dataset.deli, 10)];
+            const povezava = povezavaSKodo(k.zeton);
+            if (navigator.share) navigator.share({ title: 'RacunKem', text: 'RacunKem s prepoznavanjem iz slike (' + k.ime + ')', url: povezava }).catch(function () { /* preklicano */ });
+            else if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(povezava).then(function () { adminStanje('Povezava s kodo za »' + k.ime + '« je kopirana.'); });
+            else adminStanje(povezava);
+        } else if (g.dataset.preklici !== undefined) {
+            const i = parseInt(g.dataset.preklici, 10);
+            if (potrdiPreklic.i !== i || Date.now() - potrdiPreklic.cas > 3000) { potrdiPreklic = { i: i, cas: Date.now() }; g.textContent = 'Res prekliči?'; setTimeout(function () { if (g.isConnected) g.textContent = 'Prekliči'; }, 3000); return; }
+            adminKlic({ akcija: 'admin.preklici', zeton: kodeSkrbnika[i].zeton }).then(function (o) { if (o.status === 'success') adminSeznam(); });
+        }
+    });
+
+    // koda iz povezave (#koda=...): shrani jo in jo umakne iz naslovne vrstice
+    (function () {
+        const zadetek = /[#&]koda=([^&]+)/.exec(window.location.hash || '');
+        if (zadetek) {
+            try { history.replaceState(null, '', window.location.pathname + window.location.search); } catch (e) { /* ni bistveno */ }
+            shraniKodo(decodeURIComponent(zadetek[1]), true);
+            sporoci('Koda za prepoznavanje iz slike je shranjena v tem telefonu.');
+        } else osveziFotoStanje();
+    })();
 
     osveziCilj();
     narisiElemente();
