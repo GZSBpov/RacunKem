@@ -28,7 +28,8 @@ try:
     b=pw.chromium.launch()
     def stran(streznik=True, hash_=''):
         ctx=b.new_context(viewport={'width':390,'height':844})
-        if streznik: ctx.route('**/config.js', lambda r: r.fulfill(status=200, content_type='application/javascript', body=f"window.RACUNKEM_STREZNIK='{B}/exec';"))
+        naslov = f'{B}/exec' if streznik else ''
+        ctx.route('**/config.js', lambda r: r.fulfill(status=200, content_type='application/javascript', body=f"window.RACUNKEM_STREZNIK='{naslov}';"))
         p=ctx.new_page(); p.nap=[]; p.on('pageerror', lambda e: p.nap.append(str(e)))
         p.goto(B+'/index.html'+hash_); return p
     # brez strežnika: kalkulator deluje, slika izklopljena
@@ -50,6 +51,8 @@ try:
     p.fill('#admin-ime','Janez'); p.click('#btn-admin-nov')
     pri('skrbnik: nova koda', cakaj(lambda: 'Janez' in p.inner_text('#admin-seznam')) and 'ustvarjena' in p.inner_text('#admin-stanje'), p.inner_text('#admin-stanje'))
     zeton=list(json.loads(nastavi()['lastnosti']['ZETONI']).keys())[0]
+    p.locator('[data-uporabi]').first.click()
+    pri('skrbnik: Uporabi tukaj shrani kodo v ta telefon', cakaj(lambda: p.evaluate("localStorage.getItem('racunkem_koda_v1')")==zeton and p.input_value('#koda')==zeton and 'pripravljeno' in p.inner_text('#admin-stanje')), p.inner_text('#admin-stanje'))
     pri('stran ne vsebuje ključa OpenAI', 'testni-kljuc' not in p.content())
     # sodelavec odpre povezavo s kodo
     s=stran(True, '#koda='+zeton)

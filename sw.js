@@ -1,5 +1,5 @@
 // RacunKem - delovanje brez interneta. Ob spremembi datotek povečaj RAZLICICA.
-const RAZLICICA = 'racunkem-3';
+const RAZLICICA = 'racunkem-4';
 const DATOTEKE = ['./', 'index.html', 'alloyMath.js', 'config.js', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png'];
 
 self.addEventListener('install', function (e) {
