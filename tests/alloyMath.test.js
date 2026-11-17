@@ -38,5 +38,13 @@ pri('brez presežka ali brez Max ni razredčevanja', R.razredcenjeNaMax({ curren
 pri('ročni vnos: nova vsebnost', blizu(R.novaVsebnost({ current: 0.1, purity: 99.5 }, 26000, 600), (26 + 597) / 26600 * 100) && blizu(R.novaVsebnost({ current: 0.1, purity: 99.5 }, 26000, 600), 2.3421, 0.0001));
 pri('ročni vnos: brez kg ali mase ni rezultata', R.novaVsebnost({ current: 0.1, purity: 99.5 }, 26000, 0) === null && R.novaVsebnost({ current: 0.1, purity: 99.5 }, 0, 100) === null);
 
+// cilj po želji (drsnik): 26000 * (0.25 - 0.1) / (99.5 - 0.25) pri 25 %
+r = R.izracunaj({ current: 0.1, min: 0.2, max: 0.4, purity: 99.5 }, 26000, 25);
+pri('cilj 25 % med Min in Max', blizu(r.cilj, 0.25) && blizu(r.kg, 26000 * 0.15 / 99.25), r);
+r = R.izracunaj({ current: 0.1, min: 0.2, max: 0.4, purity: 99.5 }, 26000, 100);
+pri('cilj 100 % = Max', blizu(r.cilj, 0.4) && blizu(r.kg, 26000 * 0.3 / 99.1), r);
+// ročni dodatek čistega Al: 26000 * 0.5 / (26000 + 6500) = 0.4
+pri('po razredčenju s čistim Al', blizu(R.poRazredcenju({ current: 0.5 }, 26000, 6500), 0.4) && R.poRazredcenju({ current: 0.5 }, 26000, 0) === 0.5 && blizu(R.poRazredcenju({ current: 2.72 }, 26000, 500), 26000 * 2.72 / 26500));
+
 console.log('RacunKem: ' + ok + ' uspešnih, ' + fail + ' napak.');
 process.exit(fail ? 1 : 0);

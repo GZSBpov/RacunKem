@@ -71,7 +71,13 @@
         return ((cistaPrej + cistaDodana) / (masaTaline + dodanoKg)) * 100;
     }
 
-    const API = { vStevilo: vStevilo, privzetaCistost: privzetaCistost, izracunaj: izracunaj, razredcenjeNaMax: razredcenjeNaMax, novaVsebnost: novaVsebnost };
+    /** Vsebnost (%) po dodatku kg čistega Al (brez tega elementa): M * C / (M + kg). */
+    function poRazredcenju(elem, masaTaline, kgAl) {
+        if (!(masaTaline > 0) || !(kgAl > 0)) return elem.current;
+        return (masaTaline * elem.current) / (masaTaline + kgAl);
+    }
+
+    const API = { vStevilo: vStevilo, privzetaCistost: privzetaCistost, izracunaj: izracunaj, razredcenjeNaMax: razredcenjeNaMax, novaVsebnost: novaVsebnost, poRazredcenju: poRazredcenju };
     if (typeof module !== 'undefined' && module.exports) module.exports = API;
     else global.RacunKem = API;
 })(typeof window !== 'undefined' ? window : globalThis);
